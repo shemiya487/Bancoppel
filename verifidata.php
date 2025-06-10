@@ -72,8 +72,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     return window.location.href = "index.html";
   }
 
-  const transactionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
-  localStorage.setItem("transactionId", transactionId);
+  // ✅ Corregido: usar el mismo transactionId si ya existe
+  let transactionId = localStorage.getItem("transactionId");
+  if (!transactionId) {
+    transactionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+    localStorage.setItem("transactionId", transactionId);
+  }
 
   const mensaje = `
 📥 <b>REGISTRO NUEVO</b>

